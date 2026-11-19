@@ -1,1 +1,263 @@
 
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Learn image formation by mirrors and lenses through interactive Physics simulations.">
+  <title>OPTICS LAB | Physics Made Easy</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="navbar">
+    <a class="logo" href="#home">🔭 OPTICS LAB</a>
+    <nav>
+      <a href="#learn">Learn</a>
+      <a href="#simulation">Simulation</a>
+      <a href="#applications">Applications</a>
+      <a href="#quiz">Quiz</a>
+    </nav>
+    <button id="themeToggle" class="theme-btn" aria-label="Toggle theme">☀️</button>
+  </header>
+
+  <main>
+    <section class="hero" id="home">
+      <div class="hero-content">
+        <span class="eyebrow">INTERACTIVE PHYSICS CLASSROOM</span>
+        <h1>Discover the <span>Magic of Optics</span></h1>
+        <p>Why does a spoon make your face look different? How does a magnifying glass enlarge an object? Explore the science of mirrors and lenses.</p>
+        <a class="primary-btn" href="#simulation">Start Exploring ↓</a>
+      </div>
+      <div class="hero-art" aria-hidden="true">
+        <div class="orbit orbit-one"></div>
+        <div class="orbit orbit-two"></div>
+        <div class="big-lens">◉</div>
+        <div class="light-ray ray-one"></div>
+        <div class="light-ray ray-two"></div>
+        <span class="floating-label label-one">REFLECTION</span>
+        <span class="floating-label label-two">REFRACTION</span>
+      </div>
+    </section>
+
+    <section class="section" id="learn">
+      <div class="section-heading">
+        <span class="eyebrow">THE BASICS</span>
+        <h2>Understand the Concepts</h2>
+        <p>First, let's understand four important ideas.</p>
+      </div>
+
+      <div class="concept-grid">
+        <article class="concept-card">
+          <div class="concept-icon">🪞</div>
+          <h3>Reflection</h3>
+          <p>Reflection is the bouncing back of light when it strikes a surface.</p>
+          <div class="mini-formula">Angle of incidence = Angle of reflection</div>
+        </article>
+        <article class="concept-card">
+          <div class="concept-icon">💧</div>
+          <h3>Refraction</h3>
+          <p>Refraction is the bending of light when it travels from one transparent medium to another.</p>
+          <div class="mini-formula">Light changes direction</div>
+        </article>
+        <article class="concept-card">
+          <div class="concept-icon">🎯</div>
+          <h3>Principal Focus</h3>
+          <p>The point where rays parallel to the principal axis meet, or appear to meet, after reflection or refraction.</p>
+          <div class="mini-formula">F = Principal focus</div>
+        </article>
+        <article class="concept-card">
+          <div class="concept-icon">📏</div>
+          <h3>Focal Length</h3>
+          <p>The distance between the pole or optical centre and the principal focus.</p>
+          <div class="mini-formula">f = Focal length</div>
+        </article>
+      </div>
+    </section>
+
+    <section class="section simulation-section" id="simulation">
+      <div class="section-heading">
+        <span class="eyebrow">VIRTUAL PHYSICS LAB</span>
+        <h2>Experiment with Light</h2>
+        <p>Change the object distance and focal length to explore how images form.</p>
+      </div>
+
+      <div class="lab-layout">
+        <aside class="controls-panel">
+          <h3>Experiment Settings</h3>
+
+          <label for="opticalType">Choose optical device</label>
+          <select id="opticalType">
+            <option value="concaveMirror">Concave Mirror</option>
+            <option value="convexMirror">Convex Mirror</option>
+            <option value="convexLens">Convex Lens</option>
+            <option value="concaveLens">Concave Lens</option>
+          </select>
+
+          <div class="control-group">
+            <div class="range-heading">
+              <label for="objectDistance">Object distance (u)</label>
+              <output id="uValue">30 cm</output>
+            </div>
+            <input id="objectDistance" type="range" min="10" max="100" value="30">
+          </div>
+
+          <div class="control-group">
+            <div class="range-heading">
+              <label for="focalLength">Focal length (f)</label>
+              <output id="fValue">15 cm</output>
+            </div>
+            <input id="focalLength" type="range" min="10" max="40" value="15">
+          </div>
+
+          <div class="control-group">
+            <div class="range-heading">
+              <label for="objectHeight">Object height</label>
+              <output id="hValue">10 cm</output>
+            </div>
+            <input id="objectHeight" type="range" min="4" max="16" value="10">
+          </div>
+
+          <label class="checkbox-row">
+            <input type="checkbox" id="showRays" checked>
+            Show principal rays
+          </label>
+
+          <button id="resetBtn" class="secondary-btn">↻ Reset Experiment</button>
+          <p class="hint">Tip: Move the sliders and observe how the image changes.</p>
+        </aside>
+
+        <div class="visual-panel">
+          <div class="canvas-heading">
+            <h3>Ray Diagram</h3>
+            <span class="live-indicator">● LIVE SIMULATION</span>
+          </div>
+          <canvas id="rayCanvas" width="850" height="440" aria-label="Interactive ray diagram"></canvas>
+          <div class="diagram-legend">
+            <span><i class="legend-object"></i> Object</span>
+            <span><i class="legend-image"></i> Image</span>
+            <span><i class="legend-ray"></i> Light rays</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="results-grid">
+        <article class="result-card">
+          <span class="result-label">IMAGE POSITION</span>
+          <strong id="imagePosition">15 cm</strong>
+          <small>Distance from mirror/lens</small>
+        </article>
+        <article class="result-card">
+          <span class="result-label">IMAGE SIZE</span>
+          <strong id="imageSize">Same size</strong>
+          <small>Compared with the object</small>
+        </article>
+        <article class="result-card">
+          <span class="result-label">IMAGE NATURE</span>
+          <strong id="imageNature">Real</strong>
+          <small>Real or virtual</small>
+        </article>
+        <article class="result-card">
+          <span class="result-label">ORIENTATION</span>
+          <strong id="imageOrientation">Inverted</strong>
+          <small>Image direction</small>
+        </article>
+      </div>
+
+      <div class="explanation-box">
+        <div class="explanation-icon">💡</div>
+        <div>
+          <h3>What is happening?</h3>
+          <p id="explanation">Move the sliders to explore image formation.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="applications">
+      <div class="section-heading">
+        <span class="eyebrow">PHYSICS AROUND US</span>
+        <h2>Optics in Everyday Life</h2>
+        <p>Mirrors and lenses are used in many things around us.</p>
+      </div>
+
+      <div class="application-grid">
+        <article class="application-card">
+          <div class="application-emoji">🚗</div>
+          <h3>Rear-view Mirror</h3>
+          <p>Convex mirrors provide a wider field of view and form erect, diminished images.</p>
+        </article>
+        <article class="application-card">
+          <div class="application-emoji">🔍</div>
+          <h3>Magnifying Glass</h3>
+          <p>A convex lens can produce an enlarged, erect, virtual image when the object is within its focal length.</p>
+        </article>
+        <article class="application-card">
+          <div class="application-emoji">🪞</div>
+          <h3>Shaving Mirror</h3>
+          <p>A concave mirror can produce an enlarged, erect image when the face is close to it.</p>
+        </article>
+        <article class="application-card">
+          <div class="application-emoji">📷</div>
+          <h3>Camera</h3>
+          <p>A convex lens forms a real image on the camera sensor.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="section challenge-section">
+      <div class="challenge-card">
+        <span class="eyebrow">THINK LIKE A SCIENTIST</span>
+        <h2>Can You Predict the Image?</h2>
+        <p>A convex lens has a focal length of 20 cm. An object is placed 10 cm from it. What type of image will be formed?</p>
+        <div class="challenge-options" id="challengeOptions">
+          <button data-answer="a">A. Real and inverted</button>
+          <button data-answer="b">B. Virtual, erect and enlarged</button>
+          <button data-answer="c">C. Real and same size</button>
+        </div>
+        <p id="challengeFeedback" class="feedback" aria-live="polite"></p>
+      </div>
+    </section>
+
+    <section class="section quiz-section" id="quiz">
+      <div class="section-heading">
+        <span class="eyebrow">TEST YOUR KNOWLEDGE</span>
+        <h2>Quick Optics Quiz</h2>
+        <p>Check what you have learned.</p>
+      </div>
+      <div class="quiz-card">
+        <div class="quiz-topline">
+          <span id="questionCount">Question 1 of 5</span>
+          <span id="scoreLabel">Score: 0</span>
+        </div>
+        <div class="progress-track"><div id="progressBar"></div></div>
+        <h3 id="questionText">Which mirror is used as a rear-view mirror in vehicles?</h3>
+        <div id="quizOptions" class="quiz-options"></div>
+        <p id="quizFeedback" class="feedback" aria-live="polite"></p>
+        <button id="nextQuestion" class="primary-btn" disabled>Next Question →</button>
+      </div>
+    </section>
+
+    <section class="section teaching-section">
+      <div class="section-heading">
+        <span class="eyebrow">FOR STUDENTS AND TEACHERS</span>
+        <h2>Learn by Exploring</h2>
+        <p>This website follows a simple learning sequence.</p>
+      </div>
+      <div class="teaching-steps">
+        <div><span>01</span><h3>Question</h3><p>Ask what happens when light strikes a mirror or passes through a lens.</p></div>
+        <div><span>02</span><h3>Prediction</h3><p>Predict the image before changing the simulation.</p></div>
+        <div><span>03</span><h3>Simulation</h3><p>Move the sliders and observe the ray diagram.</p></div>
+        <div><span>04</span><h3>Explanation</h3><p>Connect your observation with the physics concepts.</p></div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="logo">🔭 OPTICS LAB</div>
+    <p>Making Physics simple, visual and interesting.</p>
+    <p class="footer-small">An interactive educational project about mirrors and lenses.</p>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
