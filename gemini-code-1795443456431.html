@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OPTICS LAB: SCIFI EDITION | Class 9</title>
+    <style>
+        :root {
+            --bg: #030712;
+            --panel: rgba(17, 24, 39, 0.7);
+            --panel-border: rgba(0, 229, 255, 0.3);
+            --cyan: #00e5ff;
+            --magenta: #f0abfc;
+            --green: #34d399;
+            --gold: #fbbf24;
+            --red: #fb7185;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --font: 'Segoe UI', system-ui, sans-serif;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: var(--font); }
+        
+        body {
+            background-color: var(--bg);
+            background-image: 
+                radial-gradient(circle at 15% 50%, rgba(0, 229, 255, 0.08) 0%, transparent 50%),
+                radial-gradient(circle at 85% 30%, rgba(240, 171, 252, 0.08) 0%, transparent 50%);
+            color: var(--text-main);
+            overflow-x: hidden;
+        }
+
+        /* Full Screen Background FX */
+        #fxCanvas { position: fixed; inset: 0; z-index: -1; pointer-events: none; }
+
+        .glass-panel {
+            background: var(--panel);
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--panel-border);
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+        }
+
+        .container { max-width: 1400px; margin: 0 auto; padding: 2rem; }
+
+        /* Header / Nav */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 2rem;
+            margin-bottom: 2rem;
+        }
+        .logo { font-size: 1.8rem; font-weight: 900; letter-spacing: 2px; text-transform: uppercase; }
+        .logo span { color: var(--cyan); text-shadow: 0 0 10px var(--cyan); }
+        .stats-bar { display: flex; gap: 1rem; }
+        .stat-badge {
+            background: rgba(251, 191, 36, 0.1);
+            border: 1px solid var(--gold);
+            color: var(--gold);
+            padding: 0.5rem 1rem;
+            border-radius: 99px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Main Lab Grid */
+        .lab-grid {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 2rem;
+        }
+
+        @media (max-width: 1024px) {
+            .lab-grid { grid-template-columns: 1fr; }
+        }
+
+        /* Sidebar Controls */
+        .sidebar { padding: 1.5rem; display: flex; flex-direction: column; gap: 1.5rem; }
+        
+        .mission-box {
+            background: rgba(52, 211, 153, 0.1);
+            border: 1px solid var(--green);
+            padding: 1rem;
+            border-radius: 12px;
+            animation: pulse-green 2s infinite;
+        }
+        @keyframes pulse-green {
+            0% { box-shadow: 0 0 0 0 rgba(52, 211, 153, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(52, 211, 153, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(52, 211, 153, 0); }
+        }
+        .mission-box h3 { color: var(--green); font-size: 0.9rem; text-transform: uppercase; margin-bottom: 0.5rem; }
+        .mission-box p { font-size: 0.95rem; font-weight: 600; }
+
+        .control-group { display: flex; flex-direction: column; gap: 0.5rem; }
+        .control-group label { display: flex; justify-content: space-between; font-size: 0.85rem; color: var(--text-muted); font-weight: bold; text-transform: uppercase; }
+        .control-group span { color: var(--cyan); }
+        
+        input[type="range"] {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+            outline: none;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: var(--cyan);
+            cursor: pointer;
+            box-shadow: 0 0 10px var(--cyan);
+        }
+
+        .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; }
+        .btn {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: var(--text-main);
+            padding: 0.75rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+        .btn:hover, .btn.active {
+            background: rgba(0, 229, 255, 0.15);
+            border-color: var(--cyan);
+            color: var(--cyan);
+            box-shadow: 0 0 15px rgba(0, 229, 255, 0.2);
+        }
+
+        /* Holo Canvas Area */
+        .holo-stage {
+            position: relative;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        .canvas-container {
+            width: 100%;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid var(--panel-border);
+            background: radial-gradient(circle at center, #0f172a, #020617);
+            position: relative;
+        }
+        #simCanvas {
+            display: block;
+            width: 100%;
+            height: 500px;
+            cursor: grab;
+        }
+        #simCanvas:active { cursor: grabbing; }
+
+        /* Data Readouts (HUD) */
+        .hud-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+        }
+        .hud-box {
+            background: rgba(0,0,0,0.4);
+            border: 1px solid rgba(255,255,255,0.1);
+            padding: 1rem;
+            border-radius: 12px;
+            text-align: center;
+        }
+        .hud-box small { color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 0.3rem; }
+        .hud-box strong { font-size: 1.2rem; color: var(--magenta); text-shadow: 0 0 8px rgba(240, 171, 252, 0.4); }
+
+        /* The Eye / Screen Target */
+        .eye-scanner {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.7);
+            border: 1px solid var(--cyan);
+            border-radius: 12px;
+            padding: 10px;
+            width: 140px;
+            text-align: center;
+            box-shadow: 0 0 20px rgba(0, 229, 255, 0.2);
+            backdrop-filter: blur(10px);
+        }
+        .eye-scanner small { color: var(--cyan); font-size: 0.7rem; text-transform: uppercase; display: block; margin-bottom: 5px; }
+        .sprite-window {
+            height: 80px;
+            background: #000;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            border: 1px inset rgba(255,255,255,0.1);
+        }
+        #spriteObj { font-size: 2.5rem; transition: transform 0.1s; }
+
+        /* Quiz / Story Section */
+        .terminal {
+            margin-top: 2rem;
+            padding: 2rem;
+            border-left: 4px solid var(--gold);
+        }
+        .terminal h2 { color: var(--gold); margin-bottom: 1rem; }
+        .quiz-opts { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem; }
+        .quiz-btn {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.2);
+            padding: 1rem;
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
+            text-align: left;
+            font-size: 1rem;
+            transition: 0.2s;
+        }
+        .quiz-btn:hover { border-color: var(--gold); }
+        .quiz-btn.correct { background: var(--green); border-color: var(--green); color: #000; font-weight: bold; }
+        .quiz-btn.wrong { background: var(--red); border-color: var(--red); }
+        #quizFeedback { margin-top: 1rem; padding: 1rem; border-radius: 8px; display: none; font-weight: bold; }
+
+    </style>
+</head>
+<body>
+
+    <!-- Ambient Space / Confetti Canvas -->
+    <canvas id="fxCanvas"></canvas>
+
+    <div class="container">
+        <header class="glass-panel">
+            <div class="logo">Optics<span>Lab</span> // V2.0</div>
+            <div class="stats-bar">
+                <div class="stat-badge">🏆 LEVEL: <span id="lvlDisp">1</span></div>
+                <div class="stat-badge">⭐ <span id="starDisp">0</span> XP</div>
+            </div>
+        </header>
+
+        <main class="lab-grid">
+            <!-- Sidebar Controls -->
+            <aside class="glass-panel sidebar">
+                <div class="mission-box" id="missionBox">
+                    <h3>Current Mission</h3>
+                    <p id="missionText">Set Distance (u) exactly to the Center of Curvature (2F) to make an image of the SAME SIZE!</p>
+                </div>
+
+                <hr style="border:0; border-top:1px solid rgba(255,255,255,0.1);">
+
+                <div class="control-group">
+                    <label>Device Type</label>
+                    <div class="btn-grid">
+                        <button class="btn active" data-dev="concave-mirror">Concave Mirror</button>
+                        <button class="btn" data-dev="convex-mirror">Convex Mirror</button>
+                        <button class="btn" data-dev="convex-lens">Convex Lens</button>
+                        <button class="btn" data-dev="concave-lens">Concave Lens</button>
+                    </div>
+                </div>
+
+                <div class="control-group" style="margin-top: 0.5rem;">
+                    <label>Light Source</label>
+                    <div class="btn-grid">
+                        <button class="btn active" id="btnObj">🕯️ Candle</button>
+                        <button class="btn" id="btnLaser">💥 Sci-Fi Laser</button>
+                    </div>
+                </div>
+
+                <hr style="border:0; border-top:1px solid rgba(255,255,255,0.1);">
+
+                <div class="control-group">
+                    <label>Distance from Pole (u) <span id="valU">-240 cm</span></label>
+                    <input type="range" id="sliderU" min="-500" max="-20" value="-240">
+                </div>
+
+                <div class="control-group">
+                    <label>Focal Length (f) <span id="valF">120 cm</span></label>
+                    <input type="range" id="sliderF" min="60" max="180" value="120">
+                </div>
+            </aside>
+
+            <!-- Holographic Bench -->
+            <section class="holo-stage glass-panel">
+                <div class="canvas-container">
+                    <canvas id="simCanvas" width="1000" height="500"></canvas>
+                    
+                    <div class="eye-scanner">
+                        <small>Scanner Output</small>
+                        <div class="sprite-window">
+                            <div id="spriteObj">🕯️</div>
+                        </div>
+                        <small id="spriteLabel" style="margin-top:5px; color:var(--text-muted);">Real Image</small>
+                    </div>
+                </div>
+
+                <div class="hud-grid">
+                    <div class="hud-box">
+                        <small>Image Distance (v)</small>
+                        <strong id="hudV">-240 cm</strong>
+                    </div>
+                    <div class="hud-box">
+                        <small>Magnification (m)</small>
+                        <strong id="hudM">-1.00x</strong>
+                    </div>
+                    <div class="hud-box">
+                        <small>Image Nature</small>
+                        <strong id="hudNature">Real & Inverted</strong>
+                    </div>
+                    <div class="hud-box">
+                        <small>Size</small>
+                        <strong id="hudSize">Same Size</strong>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Quiz / Database Terminal -->
+        <section class="glass-panel terminal">
+            <h2>🧠 Data Terminal: Unlock XP</h2>
+            <div id="quizContainer">
+                <h3 id="qText" style="font-size: 1.3rem;">Loading query...</h3>
+                <div class="quiz-opts" id="qOpts"></div>
+                <div id="quizFeedback"></div>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        // ==========================================
+        // 1. STATE & MISSION SYSTEM
+        // ==========================================
+        const state = {
+            device: 'concave-mirror',
+            u: -240,
+            f: 120,
+            h: 60,
+            objType: 'candle', // candle or laser
+            phase: 0,
+            xp: 0,
+            level: 1,
+            missionId: 0
+        };
+
+        const missions = [
+            { id: 0, text: "Mission: Place object EXACTLY at Center of Curvature (u = -240, f = 120) for a 1:1 Real Image.", check: (r) => Math.abs(state.u) === state.f * 2 && !r.isVirtual },
+            { id: 1, text: "Mission: Ignite the paper! Send the object to Infinity (drag left edge) with Concave Mirror to focus at F.", check: (r) => state.u <= -490 && state.device === 'concave-mirror' },
+            { id: 2, text: "Mission: Dentist Mode! Use Concave Mirror and move object CLOSE (inside F) to get a huge Virtual Image.", check: (r) => state.device === 'concave-mirror' && r.isVirtual && Math.abs(r.m) > 2 },
+            { id: 3, text: "Mission: Movie Projector! Use a Convex Lens, place object between F and 2F to enlarge on a real screen.", check: (r) => state.device === 'convex-lens' && !r.isVirtual && Math.abs(r.m) > 1.2 },
+            { id: 4, text: "Mission: Car Mirror! Switch to Convex Mirror to see a diminished, upright virtual image.", check: (r) => state.device === 'convex-mirror' }
+        ];
+
+        // ==========================================
+        // 2. PARTICLE FX ENGINE (CONFETTI & AMBIENT)
+        // ==========================================
+        const fxCanvas = document.getElementById('fxCanvas');
+        const fCtx = fxCanvas.getContext('2d');
+        let particles = [];
+
+        function resizeFx() { fxCanvas.width = window.innerWidth; fxCanvas.height = window.innerHeight; }
+        window.addEventListener('resize', resizeFx);
+        resizeFx();
+
+        function fireConfetti() {
+            const colors = ['#00e5ff', '#f0abfc', '#34d399', '#fbbf24'];
+            for(let i=0; i<100; i++) {
+                particles.push({
+                    x: window.innerWidth / 2, y: window.innerHeight / 2,
+                    vx: (Math.random()-0.5)*15, vy: (Math.random()-0.5)*15 - 5,
+                    life: 1, color: colors[Math.floor(Math.random()*colors.length)],
+                    size: Math.random()*6+2
+                });
+            }
+        }
+
+        function drawFx() {
+            fCtx.clearRect(0, 0, fxCanvas.width, fxCanvas.height);
+            for(let i=particles.length-1; i>=0; i--) {
+                let p = particles[i];
+                p.x += p.vx; p.y += p.vy; p.vy += 0.2; p.life -= 0.01;
+                fCtx.globalAlpha = p.life;
+                fCtx.fillStyle = p.color;
+                fCtx.beginPath(); fCtx.arc(p.x, p.y, p.size, 0, Math.PI*2); fCtx.fill();
+                if(p.life <= 0) particles.splice(i, 1);
+            }
+            fCtx.globalAlpha = 1;
+            requestAnimationFrame(drawFx);
+        }
+        drawFx();
+
+        // ==========================================
+        // 3. OPTICS SIMULATOR MATH
+        // ==========================================
+        function solveOptics() {
+            const { device, u, f } = state;
+            const isMirror = device.includes('mirror');
+            const fSigned = (device === 'concave-mirror' || device === 'concave-lens') ? -f : f;
+            
+            if (u <= -490) { // Infinity simulate
+                return { v: fSigned, m: 0, isVirtual: (device==='convex-mirror'||device==='concave-lens'), atFocus: true };
+            }
+            if (Math.abs(u - (-f)) < 3) return { v: Infinity, m: Infinity, isVirtual: false, atFocus: true };
+
+            let v, m, isVirtual;
+            if (isMirror) {
+                v = (u * fSigned) / (u - fSigned);
+                m = -v / u;
+                isVirtual = v > 0;
+            } else {
+                v = (u * fSigned) / (u + fSigned);
+                m = v / u;
+                isVirtual = v < 0;
+            }
+            return { v, m, isVirtual, atFocus: false, fSigned };
+        }
+
+        // ==========================================
+        // 4. UI CONTROLS & HUD SYNC
+        // ==========================================
+        document.querySelectorAll('[data-dev]').forEach(btn => {
+            btn.addEventListener('click', e => {
+                document.querySelectorAll('[data-dev]').forEach(b => b.classList.remove('active'));
+                e.target.classList.add('active');
+                state.device = e.target.dataset.dev;
+                updateSim();
+            });
+        });
+
+        document.getElementById('btnObj').addEventListener('click', e => {
+            state.objType = 'candle';
+            e.target.classList.add('active');
+            document.getElementById('btnLaser').classList.remove('active');
+            updateSim();
+        });
+        document.getElementById('btnLaser').addEventListener('click', e => {
+            state.objType = 'laser';
+            e.target.classList.add('active');
+            document.getElementById('btnObj').classList.remove('active');
+            updateSim();
+        });
+
+        const sU = document.getElementById('sliderU');
+        const sF = document.getElementById('sliderF');
+        
+        sU.addEventListener('input', e => { state.u = parseInt(e.target.value); updateSim(); });
+        sF.addEventListener('input', e => { state.f = parseInt(e.target.value); updateSim(); });
+
+        function checkMission(res) {
+            if (state.missionId >= missions.length) return;
+            const m = missions[state.missionId];
+            if (m.check(res)) {
+                fireConfetti();
+                state.xp += 50;
+                document.getElementById('starDisp').innerText = state.xp;
+                state.missionId++;
+                if(state.missionId < missions.length) {
+                    document.getElementById('missionText').innerHTML = `<strong>MISSION COMPLETE!</strong><br>Next: ${missions[state.missionId].text}`;
+                } else {
+                    document.getElementById('missionText').innerHTML = `<strong>ALL MISSIONS COMPLETE!</strong> You are an Optics Master!`;
+                    document.getElementById('missionBox').style.borderColor = 'var(--gold)';
+                }
+            }
+        }
+
+        function updateHUD(res) {
+            document.getElementById('valU').innerText = state.u <= -490 ? '-∞' : `${state.u} cm`;
+            document.getElementById('valF').innerText = `${state.f} cm`;
+            
+            document.getElementById('hudV').innerText = res.atFocus && state.u > -490 ? '∞' : `${Math.round(res.v)} cm`;
+            document.getElementById('hudM').innerText = res.atFocus && state.u > -490 ? '∞' : `${res.m.toFixed(2)}x`;
+            
+            document.getElementById('hudNature').innerText = res.isVirtual ? 'Virtual & Erect' : 'Real & Inverted';
+            
+            let sizeStr = 'Same Size';
+            const absM = Math.abs(res.m);
+            if (absM > 1.05) sizeStr = 'Enlarged';
+            if (absM < 0.95) sizeStr = 'Diminished';
+            if (res.atFocus && state.u > -490) sizeStr = 'Highly Enlarged';
+            if (state.u <= -490) sizeStr = 'Point Size';
+            document.getElementById('hudSize').innerText = sizeStr;
+
+            // Scanner Update
+            const sprite = document.getElementById('spriteObj');
+            const spriteL = document.getElementById('spriteLabel');
+            sprite.innerText = state.objType === 'laser' ? '🟢' : '🕯️';
+            
+            if (res.atFocus && state.u > -490) {
+                sprite.style.transform = 'scale(5)';
+                sprite.style.filter = 'blur(10px)';
+                spriteL.innerText = "No Image (Infinity)";
+            } else if (state.u <= -490) {
+                sprite.style.transform = 'scale(0.1)';
+                sprite.style.filter = 'blur(2px)';
+                spriteL.innerText = "Tiny Point Focus";
+            } else {
+                let sc = Math.max(0.3, Math.min(2.5, absM));
+                let flip = res.m < 0 ? -1 : 1;
+                sprite.style.transform = `scale(${sc}, ${sc * flip})`;
+                sprite.style.filter = res.isVirtual ? 'drop-shadow(0 0 10px rgba(0,229,255,0.8))' : 'none';
+                spriteL.innerText = res.isVirtual ? 'Virtual (Inside Glass)' : 'Real (On Screen)';
+                spriteL.style.color = res.isVirtual ? 'var(--cyan)' : 'var(--magenta)';
+            }
+        }
+
+        // ==========================================
+        // 5. CANVAS RENDER LOOP (SCI-FI STYLE)
+        // ==========================================
+        const simCanvas = document.getElementById('simCanvas');
+        const ctx = simCanvas.getContext('2d');
+        const W = simCanvas.width;
+        const H = simCanvas.height;
+        const CX = W/2;
+        const CY = H/2;
+
+        // Dragging mechanic
+        let dragging = false;
+        simCanvas.addEventListener('mousedown', () => dragging = true);
+        window.addEventListener('mouseup', () => dragging = false);
+        simCanvas.addEventListener('mousemove', e => {
+            if(!dragging) return;
+            const rect = simCanvas.getBoundingClientRect();
+            const mouseX = (e.clientX - rect.left) * (W/rect.width);
+            let targetU = Math.round(mouseX - CX);
+            targetU = Math.max(-500, Math.min(-20, targetU));
+            state.u = targetU;
+            sU.value = targetU;
+            updateSim();
+        });
+
+        function drawGlowingLine(x1, y1, x2, y2, color, dashed=false, glow=true) {
+            ctx.save();
+            ctx.beginPath();
+            ctx.moveTo(x1, y1);
+            ctx.lineTo(x2, y2);
+            ctx.strokeStyle = color;
+            ctx.lineWidth = dashed ? 2 : 3;
+            if(dashed) ctx.setLineDash([8,8]);
+            if(glow) {
+                ctx.shadowBlur = 15;
+                ctx.shadowColor = color;
+            }
+            ctx.stroke();
+
+            // Photons
+            if(!dashed && state.objType === 'laser') {
+                const t = (state.phase % 1);
+                ctx.beginPath();
+                ctx.arc(x1 + (x2-x1)*t, y1 + (y2-y1)*t, 4, 0, Math.PI*2);
+                ctx.fillStyle = '#fff';
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = '#fff';
+                ctx.fill();
+            }
+            ctx.restore();
+        }
+
+        function drawDevice() {
+            ctx.save();
+            ctx.strokeStyle = 'var(--cyan)';
+            ctx.fillStyle = 'rgba(0, 229, 255, 0.1)';
+            ctx.shadowBlur = 20;
+            ctx.shadowColor = 'var(--cyan)';
+            ctx.lineWidth = 4;
+            
+            const dev = state.device;
+            if(dev.includes('mirror')) {
+                const R = 200, arc = 0.7;
+                ctx.beginPath();
+                if(dev === 'concave-mirror') ctx.arc(CX-R, CY, R, -arc, arc);
+                else ctx.arc(CX+R, CY, R, Math.PI-arc, Math.PI+arc);
+                ctx.stroke();
+                
+                // Back hash lines
+                ctx.lineWidth = 2; ctx.shadowBlur = 0; ctx.strokeStyle = 'rgba(255,255,255,0.3)';
+                for(let a = -arc+0.1; a < arc-0.1; a+=0.1) {
+                    let ang = dev === 'concave-mirror' ? a : Math.PI+a;
+                    let cX = dev === 'concave-mirror' ? CX-R : CX+R;
+                    let bx = cX + R*Math.cos(ang), by = CY + R*Math.sin(ang);
+                    ctx.beginPath(); ctx.moveTo(bx,by); ctx.lineTo(bx+10, by-10); ctx.stroke();
+                }
+            } else if (dev === 'convex-lens') {
+                ctx.beginPath();
+                ctx.ellipse(CX, CY, 20, 140, 0, 0, Math.PI*2);
+                ctx.fill(); ctx.stroke();
+            } else {
+                ctx.beginPath();
+                ctx.moveTo(CX-20, CY-140); ctx.lineTo(CX+20, CY-140);
+                ctx.quadraticCurveTo(CX+5, CY, CX+20, CY+140);
+                ctx.lineTo(CX-20, CY+140);
+                ctx.quadraticCurveTo(CX-5, CY, CX-20, CY-140);
+                ctx.fill(); ctx.stroke();
+            }
+            ctx.restore();
+        }
+
+        function drawGrid() {
+            ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+            ctx.lineWidth = 1;
+            for(let i=0; i<W; i+=50) { ctx.beginPath(); ctx.moveTo(i,0); ctx.lineTo(i,H); ctx.stroke(); }
+            for(let i=0; i<H; i+=50) { ctx.beginPath(); ctx.moveTo(0,i); ctx.lineTo(W,i); ctx.stroke(); }
+            
+            // Principal Axis
+            ctx
